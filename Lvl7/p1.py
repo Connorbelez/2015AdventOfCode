@@ -41,32 +41,13 @@
 #In little Bobby's kit's instructions booklet (provided as your puzzle input),
 # what signal is ultimately provided to wire a?
 
-cache = {}
-class Com:
-    def __init__(self, command, inputs):
-        self.command = command
-        self.inputs = inputs
-    def output(self):
-        print(self.command)
-        print(self.inputs)
-        if self.command == "AND":
-            return int(self.inputs[0]) & int(self.inputs[1])
-        elif self.command == "OR":
-            return int(self.inputs[0]) | int(self.inputs[1])
-        elif self.command == "LSHIFT":
-            return int(self.inputs[0]) << int(self.inputs[1])
-        elif self.command == "RSHIFT":
-            return int(self.inputs[0]) >> int(self.inputs[1])
-        elif self.command == "NOT":
-            return ~int(self.inputs[0])
-        else:
-            return int(inputs[0])
+# cache = {}
 
 # circuit = {"dummyWire": ["NOT","dummyWire2"], "dummyWire2": ["123"]}  
 
-circuit = {}
+
 #wire is the target wire, it is the key in the dictionary, the value is the command and inputs
-def findValue(wire,circuit):
+def findValue(wire,circuit,cache):
     #we do this because we recursively search the input,
     #once we find an integer value we can return it
     if type(wire) == int:
@@ -85,77 +66,24 @@ def findValue(wire,circuit):
             inputs[i] = cache[w]
 
     if command == "->":
-        cache[wire] = findValue(inputs[0], circuit)
+        cache[wire] = findValue(inputs[0], circuit,cache)
         return cache[wire]
     elif command == "NOT":
-        cache[wire] = ~findValue(inputs[0], circuit)
+        cache[wire] = ~findValue(inputs[0], circuit,cache)
         return cache[wire]
     elif command == "AND":
-        cache[wire] = findValue(inputs[0], circuit) & findValue(inputs[1], circuit)
+        cache[wire] = findValue(inputs[0], circuit,cache) & findValue(inputs[1], circuit,cache)
         return cache[wire]
     elif command == "OR":
-        cache[wire] = findValue(inputs[0], circuit) | findValue(inputs[1], circuit)
+        cache[wire] = findValue(inputs[0], circuit,cache) | findValue(inputs[1], circuit,cache)
         return cache[wire]
     elif command == "LSHIFT":
-        cache[wire] = findValue(inputs[0], circuit) << findValue(inputs[1], circuit)
+        cache[wire] = findValue(inputs[0], circuit,cache) << findValue(inputs[1], circuit,cache)
         return cache[wire]
     elif command == "RSHIFT":
-        cache[wire] = findValue(inputs[0], circuit) >> findValue(inputs[1], circuit)
+        cache[wire] = findValue(inputs[0], circuit,cache) >> findValue(inputs[1], circuit,cache)
         return cache[wire]
     
-    
-def get_value(wire, circuit):
-    print("WIRE ",wire)
-    if isinstance(wire, int):
-        print("WIRE IS DIGIT: ",wire)
-        return wire
-    print(type(wire))
-    if wire.isnumeric():
-        print("Wire is numeric")
-        return int(wire)
-    
-    print("Input to Wire: ",circuit[wire])
-    wireVal = circuit[wire]
-    if wire in cache:
-        print("Cache hit: Wire: ", wire, " Value: ", cache[wire])
-        return cache[wire]
-    
-    for i in range(len(wireVal)):
-        if wireVal[i] in cache:
-            wireVal[i] = cache[wireVal[i]]
-        
-    if wireVal[0] == "->":
-        if wireVal[1].isnumeric():
-            print("WireVal is numeric : ", wireVal[1])
-            cache[wire] = int(wireVal[1])
-            return int(wireVal[1])
-        else :
-            return get_value(wireVal[1], circuit)
-        
-    
-    elif wireVal[0] == "NOT":
-        print("NOT", "input1: ",wireVal[1]," output: ",wire)
-        return ~(get_value(wireVal[1], circuit))
-    elif wireVal[0] == "AND":
-        print("AND", "input1: ",wireVal[1]," Input2: ", wireVal[2], " output: ",wire)
-        
-        if wireVal[1].isnumeric() and wireVal[2].isnumeric():
-            print("Both inputs are numeric")
-            cache[wire] = int(wireVal[1]) & int(wireVal[2])
-            return int(wireVal[1]) & int(wireVal[2])
-        
-        return (get_value(wireVal[1], circuit) & get_value(wireVal[2], circuit))
-    elif wireVal[0] == "OR":
-        
-        print("or", "input1: ",wireVal[1]," Input2: ", wireVal[2], " output: ",wire)
-        return (get_value(wireVal[1], circuit) | get_value(wireVal[2], circuit))
-    elif wireVal[0] == "LSHIFT":
-        print("LSHIFT", "input1: ",wireVal[1]," output: ",wire)
-        return (get_value(wireVal[1], circuit) << int(wireVal[2]))
-    elif wireVal[0] == "RSHIFT":
-        print("RSHIFT", "input1: ",wireVal[1]," output: ",wire)
-        return (get_value(wireVal[1], circuit) >> int(wireVal[2]))
-
 
 def getCommand(string):
     non_atomic = ['AND', 'OR', 'LSHIFT', 'RSHIFT']
@@ -180,6 +108,8 @@ def getCommand(string):
     return Command, inputs
 
 if __name__ == "__main__":
+    cache = {}
+    circuit = {}
     with open("/Users/connorbeleznay/Projects/Personal/AdventOfCode/2015/Lvl7/data7p1.txt", "r") as f:
         for line in f:
 
@@ -190,6 +120,15 @@ if __name__ == "__main__":
                     inputs[i] = int(inp)
             
             circuit[target] = [command] + inputs
-
-    # print(circuit)
-    print(findValue("a", circuit))
+    print(circuit['b'])
+    # a = findValue('a', circuit)
+    z = findValue('a', circuit,cache)
+    print("z: ",z)
+    a = 16076
+    cache['b'] = a 
+    circuit['b'] = ['->',a]
+    
+    vala = findValue("a", circuit,cache)
+    print(vala)
+    # cache = {}
+    
